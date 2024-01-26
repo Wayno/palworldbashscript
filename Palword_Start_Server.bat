@@ -31,7 +31,7 @@ if "%current_hour:~0,1%"==" " set "current_hour=0%current_hour:~1,1%"
 
 REM Check if it's time to restart
 if "%current_hour%"=="%Restart_Hour%" (
-    if "%current_minute%" geq "%Restart_Minute%" if "%current_minute%" leq "05" (
+    if "%current_minute%" geq "%Restart_Minute%" if "%current_minute%" leq "%Restart_Minute%+5" (
         echo It is time to restart the server.
         goto shutdown_server
     )
@@ -43,7 +43,6 @@ if ERRORLEVEL 1 (
     echo Server is not running, calling :update_server.
     call :update_server
 ) else (
-    cls
     echo Server is already running.
 )
 
@@ -61,7 +60,6 @@ if ERRORLEVEL 0 (
     echo [%date% %time%] Server updated successfully. Starting server... >> "%Log_File%"
     cd "%Executable_Dir%"
     start "" /high "%Server_Executable%" %Extracommands%
-    cls
 ) else (
     echo [%date% %time%] Server update failed. Check logs for details.
     echo [%date% %time%] Server update failed. Check logs for details. >> "%Log_File%"
@@ -72,6 +70,7 @@ REM Function to shut down the server
 :shutdown_server
 echo [%date% %time%] Server already running. Shutting down...
 echo [%date% %time%] Server already running. Shutting down... >> "%Log_File%"
-taskkill /im "%Server_Executable%" /f /t
-timeout /t 3
-exit /b
+taskkill /f /t /im "%Server_Executable%"
+echo Waiting 60 secs to stop repeating shutdown
+timeout /t 60
+goto main_loop
